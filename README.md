@@ -55,7 +55,7 @@ json-shape https://api.example.com/data.json
 
 The tool outputs a tree structure showing:
 - Field names
-- Field types (string, number, boolean, object, array, null, unkown)
+- Field types (string, number, boolean, object, array, null, unknown)
 - Optional fields marked with `(optional)`
 - Nested structures with proper indentation
 
