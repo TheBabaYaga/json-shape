@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"sort"
+	"strings"
 )
 
 type FieldInfo struct {
@@ -222,14 +224,28 @@ func printTree(fields map[string]*FieldInfo, prefix string, isRoot bool) {
 func main() {
 	var reader io.Reader = os.Stdin
 	if len(os.Args) > 1 {
-		filename := os.Args[1]
-		file, err := os.Open(filename)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
-			os.Exit(1)
+		input := os.Args[1]
+		if strings.HasPrefix(input, "http://") || strings.HasPrefix(input, "https://") {
+			resp, err := http.Get(input)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error fetching URL: %v\n", err)
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				fmt.Fprintf(os.Stderr, "Error fetching URL: status %d\n", resp.StatusCode)
+				os.Exit(1)
+			}
+			reader = resp.Body
+		} else {
+			file, err := os.Open(input)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
+				os.Exit(1)
+			}
+			defer file.Close()
+			reader = file
 		}
-		defer file.Close()
-		reader = file
 	}
 
 	var jsonData interface{}
