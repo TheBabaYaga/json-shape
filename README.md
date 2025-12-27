@@ -192,7 +192,7 @@ The test suite includes:
 
 ## Requirements
 
-- Go 1.25.5 or later
+- Go 1.22 or later
 
 ## License
 
