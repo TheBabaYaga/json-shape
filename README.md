@@ -83,10 +83,10 @@ root
    - `boolean` for true/false values
    - `object` for nested objects
    - `array<type>` for arrays (e.g., `array<string>`, `array<number>`)
-   - `null` for null values
+   - `unknown` for fields where the type cannot be determined (e.g., fields that are always `null` in the input)
 4. **Optionality Detection**: A field is marked as optional if:
    - It appears in fewer objects than the parent object count
-   - It has a null value at least once
+   - It has a null value at least once (even if it's the only value, it remains `unknown (optional)`)
 5. **Schema Merging**: When analyzing arrays of objects, the tool merges all object schemas to create a unified structure
 
 ## Examples
@@ -151,7 +151,7 @@ root
 └── user
     ├── id: number
     └── profile
-        ├── avatar: string (optional)
+        ├── avatar: unknown (optional)
         └── bio: string
 ```
 

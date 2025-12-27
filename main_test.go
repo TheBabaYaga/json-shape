@@ -20,7 +20,7 @@ func TestGetType(t *testing.T) {
 		{[]interface{}{1.0, 2.0}, "array<number>"},
 		{[]interface{}{"a", "b"}, "array<string>"},
 		{map[string]interface{}{"a": 1}, "object"},
-		{nil, "null"},
+		{nil, "unknown"},
 		{struct{}{}, "unknown"},
 	}
 
@@ -53,7 +53,7 @@ func TestFinalizeOptionality(t *testing.T) {
 
 func TestMergeField(t *testing.T) {
 	fields := make(map[string]*FieldInfo)
-	
+
 	// First merge
 	mergeField(fields, "a", 1.0)
 	if fields["a"].Type != "number" || fields["a"].count != 1 {
@@ -78,9 +78,9 @@ func TestAnalyzeJSON(t *testing.T) {
 		map[string]interface{}{"name": "Alice", "age": 30.0},
 		map[string]interface{}{"name": "Bob"},
 	}
-	
+
 	fields := analyzeJSON(data)
-	
+
 	if fields["name"].Optional {
 		t.Error("name should not be optional")
 	}
@@ -115,7 +115,7 @@ func TestAnalyzeJSONArrayMerging(t *testing.T) {
 		t.Fatal("tags field missing")
 	}
 
-	// In the current implementation, if an array contains objects, 
+	// In the current implementation, if an array contains objects,
 	// fieldInfo.Type becomes "" and children are merged.
 	if tags.Children["id"] == nil || tags.Children["id"].Type != "number" {
 		t.Errorf("tags.id type should be number")
@@ -137,21 +137,56 @@ func TestAnalyzeJSONNested(t *testing.T) {
 			},
 		},
 	}
-	
+
 	fields := analyzeJSON(data)
-	
+
 	user := fields["user"]
 	if user == nil || len(user.Children) == 0 {
 		t.Fatal("user field or its children missing")
 	}
-	
+
 	if user.Children["id"].Type != "number" {
 		t.Errorf("user.id type should be number, got %s", user.Children["id"].Type)
 	}
-	
+
 	profile := user.Children["profile"]
 	if profile == nil || profile.Children["bio"].Type != "string" {
 		t.Errorf("profile.bio type should be string")
+	}
+}
+
+func TestAnalyzeJSONNullField(t *testing.T) {
+	data := map[string]interface{}{
+		"avatar": nil,
+	}
+
+	fields := analyzeJSON(data)
+
+	if avatar, ok := fields["avatar"]; ok {
+		// If it's just null, it should be "unknown" and "optional"
+		if avatar.Type != "unknown" {
+			t.Errorf("expected type 'unknown' for null field, got %q", avatar.Type)
+		}
+		if !avatar.Optional {
+			t.Error("expected null field to be optional")
+		}
+	} else {
+		t.Fatal("avatar field missing")
+	}
+}
+
+func TestAnalyzeJSONNullUpgrade(t *testing.T) {
+	data := []interface{}{
+		map[string]interface{}{"a": nil},
+		map[string]interface{}{"a": "hello"},
+	}
+
+	fields := analyzeJSON(data)
+	if fields["a"].Type != "string" {
+		t.Errorf("expected type 'string' after upgrade from null, got %q", fields["a"].Type)
+	}
+	if !fields["a"].Optional {
+		t.Error("expected upgraded null field to be optional")
 	}
 }
 
@@ -233,4 +268,3 @@ func TestMainIntegration(t *testing.T) {
 		t.Errorf("Integration test output mismatch:\n%s", output)
 	}
 }
-

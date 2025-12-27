@@ -161,7 +161,7 @@ func getType(value interface{}) string {
 	case map[string]interface{}:
 		return "object"
 	case nil:
-		return "null"
+		return "unknown"
 	default:
 		return "unknown"
 	}
