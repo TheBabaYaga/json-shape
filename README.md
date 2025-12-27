@@ -55,7 +55,7 @@ json-shape https://api.example.com/data.json
 
 The tool outputs a tree structure showing:
 - Field names
-- Field types (string, number, boolean, object, array, null)
+- Field types (string, number, boolean, object, array, null, unkown)
 - Optional fields marked with `(optional)`
 - Nested structures with proper indentation
 
@@ -206,7 +206,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Kevin T'Syen
 
-## Acknowledgments
+## Use cases
 
 This tool is useful for:
 - Understanding JSON API responses
@@ -215,3 +215,11 @@ This tool is useful for:
 - Generating schema documentation
 - Analyzing large JSON datasets
 
+## What json-shape does NOT do
+
+- It does not validate JSON against a schema
+- It does not generate JSON Schema or OpenAPI definitions
+- It does not infer types beyond what appears in the input
+- It does not guarantee correctness for unseen data
+
+Note: JSON input is read fully into memory. Very large files or responses may require sufficient memory.
