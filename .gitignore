@@ -37,4 +37,7 @@ go.work.sum
 # Local test data
 local_data/
 
+# Builds
+builds/
+
 .DS_Store
